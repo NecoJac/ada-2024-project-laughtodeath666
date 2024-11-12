@@ -22,4 +22,11 @@ This sheet is used to track the progress.
         1. 结果搬运至results中，对jack主题的结果图进行方差分析，判断影响因素对于strategy是否显著，并添加了一些说明性文字。
         2. 进一步分析了不同类别频道中各个因素的显著与否，显著的几项进行了可视化，分析适合采用什么strategy。
 
+###############################################################
+[csh-12/11/2024]:
+    [working]:
+        1. 函数部分迁移至src/utils文件中，补充了用于sample data的文件
+        2. 对popularity score进行了一些补充，添加了使用PCA方法计算的部分
+        3. 添加了部分Readme文件的内容
+
     
