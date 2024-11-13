@@ -29,4 +29,9 @@ This sheet is used to track the progress.
         2. 对popularity score进行了一些补充，添加了使用PCA方法计算的部分
         3. 添加了部分Readme文件的内容
 
-    
+###############################################################
+[lxran-13/11/2024]:
+    [working]:
+        1. 优化p-value的print方式
+        2. 增加不同频道下duration的分析。
+        3. 增加notebook里analysis of video duration的相关描述。 
