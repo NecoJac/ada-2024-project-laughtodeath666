@@ -1,5 +1,5 @@
+## YouTube's Inner World: A Data Exploration of Channel and Video Dynamics
 
-# Your project name
 This is a template repo for your project to help you organise and document your code better. 
 Please use this structure for your project and document the installation, usage and structure as below.
 
@@ -15,9 +15,53 @@ In this project, we aim to explore strategies to enhance the popularity of a You
 ## Methodology
 1. Sample Data: Considering the limitations of computing resources. We select a subset of YouTube channels from df_channels_en.tsv. The sample dataset includes channel_id with varying video category diversity and have the same proportion of video categories as the original dataset. Then, we use these channel_ids to filter data from df_timeseries_en.tsv, num_comments.tsv and yt_metadata_helper.feather.
 
+1. Data Preprocessing: We identified missing or NaN values in each data frame and addressed these by imputing values. Specifically, missing values were filled using the mean computed per 'channel_id' to maintain consistency across related entries.
+
+1. Statistical Analysis: 
+
+   a) Mean, median and standard deviation of different inputs are calculated for further comparison and analysis.
+
+   b) The Shannon Entropy Formula is used to calculate the diversity of a channel's content based on the categories of its videos.  A higher entropy value indicates that the content is more evenly distributed across categories. A lower entropy value means the content is more concentrated in a few categories, indicating less diversity.
+
+   c) Analysis of Variance : To explore the relationships between diversity and performance within different categories, relevant hypotheses are proposed, and then the corresponding F-values and p-values are calculated to categorize whether content strategy (Diversified, Mixed, Specialized) has a noticeable impact on metrics such as view count, engagement rate, and subscriber growth. 
+
+1. Metrics Calculation: 
+
+   a) The Engagement Rate is calculated as the ratio of like_count to view_count.
+
+   b) The Popularity Score is calculated based on the weights of different normalized factors to reflect overall video performance.
+
+1. Visualization: 
+
+   a) Scatter Plot: The plots explore the relationship between content diversity and average view_count for each channel,  the relationship between content diversity and engagement rate, the relationship between content diversity and weekly subscriber growth and the relationship between content diversity and weekly view growth. Logarithmic Scale is used for better visualization.
+
+   b) Bar chart: Bar chatrs are used to show the mean view count, mean weekly subscriber growth, mean weekly view growth and mean engagement rate of different content strategies.
+
+   c) Line plot: Optimal video length for different categories are showed in line plot by different metrics. Also, the average popularity score over time is plotted for each video duration category.
+
+   d) Box plot: Several box plots are generated to visualize how different the video performances vary by video duration categories.
+
 ## Proposed Timeline
 
+1. 30.11.2024-06.12.2024
+
+   Further analyzing the data, especially in conjunction with the differentiation of audience preferences for videos of different durations from 2016 to 2019. 
+
+   Finding external reasons that lead to YouTube viewers' preference for duration.
+
+2. 07.12.2024-13.12.2024
+
+   Building a basic framework to tell the data story. 
+
+   Relate the content strategies with the analysis of duration preferences for better storytelling perspective
+
+3. 14.12.2024-20.12.2024
+
+   Select relevant data and visualization tools, complete and improve the final story presentation.
+
 ## Organisation within the Team
+
+
 
 ## Quickstart
 
