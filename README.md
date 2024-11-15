@@ -35,43 +35,53 @@ In this project, we aim to explore strategies to enhance the popularity of a You
 
    a) Scatter Plot: The plots explore the relationship between content diversity and average view_count for each channel,  the relationship between content diversity and engagement rate, the relationship between content diversity and weekly subscriber growth and the relationship between content diversity and weekly view growth. Logarithmic Scale is used for better visualization.
 
-   b) Bar chart: Bar chatrs are used to show the mean view count, mean weekly subscriber growth, mean weekly view growth and mean engagement rate of different content strategies.
+   b) Bar chart: Bar charts are used to show the mean view count, mean weekly subscriber growth, mean weekly view growth and mean engagement rate of different content strategies.
 
-   c) Line plot: Optimal video length for different categories are showed in line plot by different metrics. Also, the average popularity score over time is plotted for each video duration category.
+   c) Line plot: Optimal video length for different categories are shown in line plot by different metrics. Also, the average popularity score over time is plotted for each video duration category.
 
    d) Box plot: Several box plots are generated to visualize how different the video performances vary by video duration categories.
 
 ## Proposed Timeline
 
-1. 30.11.2024-06.12.2024
+1. 16.11.2024-30.11.2024
 
-   Further analyzing the data, especially in conjunction with the differentiation of audience preferences for videos of different durations from 2016 to 2019. 
+   Diversity Outlier Investigation.
 
-   Finding external reasons that lead to YouTube viewers' preference for duration.
+   Analyze highly successful diversified channels, study their unique strategies and characteristics.
 
-2. 07.12.2024-13.12.2024
+2. 30.11.2024-06.12.2024
 
-   Building a basic framework to tell the data story. 
+   Further analyze the data, especially in conjunction with the differentiation of audience preferences for videos of different durations from 2016 to 2019. 
 
-   Relate the content strategies with the analysis of duration preferences for better storytelling perspective
+   Find external reasons that lead to YouTube viewers' preference for duration.
 
-3. 14.12.2024-20.12.2024
+3. 07.12.2024-13.12.2024
+
+   Build a basic framework to tell the data story. 
+
+   Relate the content strategies with the analysis of duration preferences for better storytelling perspective.
+
+4. 14.12.2024-20.12.2024
 
    Select relevant data and visualization tools, complete and improve the final story presentation.
 
-## Organisation within the Team
+## Organization within the team
+- Shengze: Diversity Outlier Investigation.
+- Shuhua: Study the impact of events on preference duration
+- Xuanrui: Frequency domain analysis of YouTube data time series
+- Xinran: Relate the content strategies with the analysis of duration preferences
+- Xinyue: Build a framework to tell the data story
 
 
-
-## Quickstart
+## Quickstart
 
 ```bash
 # clone project
-git clone <project link>
+git clone <git@github.com:epfl-ada/ada-2024-project-laughtodeath666.git>
 cd <project repo>
 
 # [OPTIONAL] create conda environment
-conda create -n <env_name> python=3.11 or ...
+conda create -n <env_name> python=3.9 
 conda activate <env_name>
 
 
@@ -79,27 +89,25 @@ conda activate <env_name>
 pip install -r pip_requirements.txt
 ```
 
-
-
-### How to use the library
-Tell us how the code is arranged, any explanations goes here.
-
-
+Download the dataset from this following link and add the data files to the directory 'data'.
+> https://zenodo.org/records/4650046
 
 ## Project Structure
 
-The directory structure of new project looks like this:
+The directory structure of this project looks like this:
 
 ```
 ├── data                        <- Project data files
 │
-├── src                         <- Source code
-│   ├── data                            <- Data directory
-│   ├── models                          <- Model directory
-│   ├── utils                           <- Utility directory
-│   ├── scripts                         <- Shell scripts
-│
-├── tests                       <- Tests of any kind
+├── src/                        <- Source code
+│   ├── data/                   <- Data loading and preprocessing
+│   │   ├── sample_data.ipynb   <- Sample data generation
+│   │   ├── loader.py           <- Data loading functions
+│   │   └── preprocessor.py     <- Data preprocessing functions
+│   │
+│   ├── utils/                  <- Analysis utilities
+│   │   ├── content.py          <- Content diversity strategy analysis
+│   │   └── duration.py         <- Video duration analysis
 │
 ├── results.ipynb               <- a well-structured notebook showing the results
 │
