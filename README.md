@@ -68,7 +68,7 @@ In this project, we aim to explore strategies to enhance the popularity of a You
 ## Organization within the team
 - Shengze: Diversity Outlier Investigation.
 - Shuhua: Study the impact of events on preference duration
-- Xuanrui: Frequency domain analysis of YouTube data time series
+- Xuanrui: Frequency domain analysis, time series fitting and forecasting
 - Xinran: Relate the content strategies with the analysis of duration preferences
 - Xinyue: Build a framework to tell the data story
 
