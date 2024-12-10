@@ -146,6 +146,8 @@ def analyze_duration_metrics(df_metadata, df_comments):
         labels=duration_labels
     )
 
+    df_analysis['year_month'] = df_analysis['upload_date'].dt.to_period('M')
+
     return df_analysis
 
 def plot_engagement_metrics(df_analysis):
@@ -188,16 +190,8 @@ def plot_engagement_metrics(df_analysis):
 
     plt.tight_layout()
 
-    # Calculate statistics, explicitly specify observed parameter
-    engagement_stats = df_analysis.groupby('duration_category', observed=True)['engagement_rate'].agg([
-        'mean', 'median', 'std'
-    ]).round(2)
-
-    return fig, engagement_stats
 
 def analyze_temporal_trends(df_analysis):
-    # Pre-calculate year and month
-    df_analysis['year_month'] = df_analysis['upload_date'].dt.to_period('M')
 
     # Explicitly specify observed parameter
     temporal_trends = (df_analysis.groupby(

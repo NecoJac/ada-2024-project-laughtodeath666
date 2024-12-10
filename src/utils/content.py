@@ -164,6 +164,7 @@ def diversity_plot_insights(merged_metrics):
         alpha=0.5,
         ax=axes[0,1]
     )
+    axes[0, 1].set_yscale('log')
     axes[0,1].set_title('Content Diversity vs Average Engagement_rate')
 
     # 3. Growth rate vs Diversity
@@ -175,6 +176,7 @@ def diversity_plot_insights(merged_metrics):
         alpha=0.5,
         ax=axes[1,0]
     )
+    axes[1, 0].set_yscale('log')
     axes[1,0].set_title('Content Diversity vs Weekly_sub_growth')
 
     # 4. Main category ratio vs Growth rate
@@ -186,6 +188,7 @@ def diversity_plot_insights(merged_metrics):
         alpha=0.5,
         ax=axes[1,1]
     )
+    axes[1, 1].set_yscale('log')
     axes[1,1].set_title('Content Diversity vs Weekly_view_growth')
 
     plt.tight_layout()
