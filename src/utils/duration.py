@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-
+from scipy.stats import f_oneway
 
 def calculate_popularity_score_vectorized(df):
     """
@@ -230,3 +230,330 @@ def analyze_temporal_trends(df_analysis):
     plt.show()
 
     return plt
+
+
+def analyze_duration_metrics_by_category(df_metadata, df_comments):
+    """
+    Analyze relationships between video duration and various performance metrics by category
+    """
+    # Select only needed columns for merging to reduce memory usage
+
+    df_metadata_subset = df_metadata[['categories', 'display_id', 'duration', 'view_count', 'like_count', 'upload_date']].copy()
+    df_comments_subset = df_comments[['display_id', 'num_comms']].copy()
+
+    # Merge datasets
+    df_analysis = pd.merge(
+        df_metadata_subset,
+        df_comments_subset,
+        on='display_id',
+        how='left'
+    )
+    df_analysis = df_analysis[df_analysis['categories'] != '']
+
+    # Convert duration to minutes
+    df_analysis['duration_minutes'] = df_analysis['duration'] / 60
+
+    # Vectorized calculation of popularity score
+    df_analysis['popularity_score'] = calculate_popularity_score_vectorized(df_analysis)
+
+    # Create duration categories
+    duration_bins = [0, 1, 3, 5, 10, 15, 30, 60, np.inf]
+    duration_labels = ['0-1', '1-3', '3-5', '5-10', '10-15', '15-30', '30-60', '60+']
+    df_analysis['duration_category'] = pd.cut(
+        df_analysis['duration_minutes'],
+        bins=duration_bins,
+        labels=duration_labels
+    )
+
+    return df_analysis
+
+
+def analyze_temporal_trends_by_category(df_analysis):
+    """
+    Analyze and plot the evolution of video duration preferences by category
+    """
+    # Ensure 'upload_date' is in datetime format if not already
+    if not pd.api.types.is_datetime64_any_dtype(df_analysis['upload_date']):
+        df_analysis['upload_date'] = pd.to_datetime(df_analysis['upload_date'])
+
+    # Pre-calculate year and month
+    df_analysis['year_month'] = df_analysis['upload_date'].dt.to_period('M')
+
+    # Get unique categories
+    categories = df_analysis['categories'].dropna().unique()
+
+    # Create a figure with multiple subplots
+    num_categories = len(categories)
+    cols = 3
+    rows = (num_categories + cols - 1) // cols  # Ensure enough rows for all subplots
+
+    fig, axes = plt.subplots(rows, cols, figsize=(20, rows * 5))
+    axes = axes.flatten()  # Flatten for easier indexing
+
+    for i, category in enumerate(categories):
+        # Filter data for the category
+        category_data = df_analysis[df_analysis['categories'] == category]
+
+        # Calculate temporal trends
+        temporal_trends = (category_data.groupby(
+            ['year_month', 'duration_category'],
+            observed=True
+        )['popularity_score'].mean().reset_index())
+
+        # Reshape data using pivot_table
+        pivot_data = temporal_trends.pivot(
+            index='year_month',
+            columns='duration_category',
+            values='popularity_score'
+        )
+
+        # Plot trend lines for the category
+        ax = axes[i]
+        for col in pivot_data.columns:
+            if not pivot_data[col].empty:
+                ax.plot(range(len(pivot_data)), pivot_data[col], label=col, marker='o', markersize=4)
+
+        # Set x-axis labels
+        step = max(len(pivot_data) // 10, 1)
+        ax.set_xticks(range(0, len(pivot_data), step))
+        ax.set_xticklabels([str(idx) for idx in pivot_data.index[::step]], rotation=45)
+
+        # Set titles and labels
+        ax.set_title(f'Evolution of Video Duration Preferences: {category}')
+        ax.set_xlabel('Time')
+        ax.set_ylabel('Average Popularity Score')
+        ax.legend(title='Duration (minutes)', bbox_to_anchor=(1.05, 1))
+        ax.grid(True, alpha=0.3)
+
+    # Hide unused axes
+    for j in range(i + 1, len(axes)):
+        fig.delaxes(axes[j])
+
+    plt.tight_layout()
+    return fig
+
+
+def cohens_d(group1, group2):
+    # Calculate the mean and standard deviation
+    mean1, mean2 = np.mean(group1), np.mean(group2)
+    std1, std2 = np.std(group1, ddof=1), np.std(group2, ddof=1)
+
+    # Calculate Cohen's d
+    pooled_std = np.sqrt(((std1 ** 2) + (std2 ** 2)) / 2)
+    return abs(mean1 - mean2) / pooled_std
+
+
+def prepare_data_before(df_analysis):
+    # Filter out data from 2006 to 2013
+    df_filtered = df_analysis[
+        (df_analysis['upload_date'] >= '2006-01-01') &
+        (df_analysis['upload_date'] <= '2013-12-31')
+        ].copy()
+
+    # Aggregate data
+    agg_metrics = df_filtered.groupby(
+        ['categories', 'duration_category', df_filtered['upload_date'].dt.year],
+        observed=False  # 显式设置 observed 参数
+    )['popularity_score'].mean().reset_index()
+
+    agg_metrics.rename(columns={'upload_date': 'year'}, inplace=True)
+
+    # Filter out groups without data
+    agg_metrics = agg_metrics.dropna(subset=['popularity_score'])
+
+    return agg_metrics
+
+
+def prepare_data_after(df_analysis):
+    # Filter out data from 2014 to 2019
+    df_filtered = df_analysis[
+        (df_analysis['upload_date'] >= '2014-01-01') &
+        (df_analysis['upload_date'] <= '2019-12-31')
+        ].copy()
+
+    # Aggregate data
+    agg_metrics = df_filtered.groupby(
+        ['categories', 'duration_category', df_filtered['upload_date'].dt.year],
+        observed=False  # 显式设置 observed 参数
+    )['popularity_score'].mean().reset_index()
+
+    agg_metrics.rename(columns={'upload_date': 'year'}, inplace=True)
+
+    # Filter out groups without data
+    agg_metrics = agg_metrics.dropna(subset=['popularity_score'])
+
+    return agg_metrics
+
+
+def compute_significance(agg_metrics):
+    results = []
+
+    # Get all different categories
+    categories = agg_metrics['categories'].unique()
+
+    # Bonferroni calibration
+    num_comparisons = len(categories) * len(agg_metrics['duration_category'].unique())
+    alpha = 0.01 / num_comparisons  # Adjusted significance threshold
+
+    # for all categories
+    for category in categories:
+        category_data = agg_metrics[agg_metrics['categories'] == category]
+
+        duration_groups = [
+            group['popularity_score'].values
+            for _, group in category_data.groupby('duration_category', observed=False)
+        ]
+
+        # Perform ANOVA test
+        if len(duration_groups) > 1:
+            f_stat, p_val = f_oneway(*duration_groups)
+
+            # Calculate the size of the effect
+            if len(duration_groups) > 1:
+                d_value = cohens_d(duration_groups[0], duration_groups[1])
+            else:
+                d_value = np.nan  # If not enough groups for Cohen's d
+
+            # get results
+            results.append({
+                'category': category,
+                'f_stat': f_stat,
+                'p_value': p_val,
+                'effect_size': d_value,
+                'is_significant': p_val < alpha
+            })
+
+    results_df = pd.DataFrame(results)
+
+    return results_df
+
+
+def compute_significance_for_worst_only(agg_metrics):
+    results = []
+
+    # for all categories
+    for category in agg_metrics['categories'].unique():
+        category_data = agg_metrics[agg_metrics['categories'] == category]
+
+        # find worst groups
+        worst_duration = category_data.loc[category_data['popularity_score'].idxmin(), 'duration_category']
+        worst_group = category_data[category_data['duration_category'] == worst_duration]
+
+        # find other groups
+        other_groups = category_data[category_data['duration_category'] != worst_duration]
+
+        # Perform ANOVA test
+        if len(worst_group) > 0 and len(other_groups) > 0:
+            duration_groups = [
+                worst_group['popularity_score'].values,
+                other_groups['popularity_score'].values
+            ]
+
+            f_stat, p_val = f_oneway(*duration_groups)
+
+            # Calculate the size of the effect
+            effect_size = cohens_d(worst_group['popularity_score'], other_groups['popularity_score'])
+
+            # get results
+            results.append({
+                'category': category,
+                'worst_duration': worst_duration,
+                'f_stat': f_stat,
+                'p_value': p_val,
+                'cohen_d': effect_size
+            })
+
+    results_df = pd.DataFrame(results)
+
+    # Bonferroni calibration
+    n_tests = len(results_df)
+    results_df['p_value_bonferroni'] = results_df['p_value'] * n_tests
+    results_df['is_significant_bonferroni'] = results_df['p_value_bonferroni'] < 0.01
+
+    return results_df
+
+
+def compute_significance_for_best_only(agg_metrics):
+    results = []
+
+    # for all categories
+    for category in agg_metrics['categories'].unique():
+        category_data = agg_metrics[agg_metrics['categories'] == category]
+
+        # find best groups
+        best_duration = category_data.loc[category_data['popularity_score'].idxmax(), 'duration_category']
+        best_group = category_data[category_data['duration_category'] == best_duration]
+
+        # find other groups
+        other_groups = category_data[category_data['duration_category'] != best_duration]
+
+        # Perform ANOVA test
+        if len(best_group) > 0 and len(other_groups) > 0:
+            duration_groups = [
+                best_group['popularity_score'].values,
+                other_groups['popularity_score'].values
+            ]
+
+            f_stat, p_val = f_oneway(*duration_groups)
+
+            # Calculate the size of the effect
+            effect_size = cohens_d(best_group['popularity_score'], other_groups['popularity_score'])
+
+            # get results
+            results.append({
+                'category': category,
+                'best_duration': best_duration,
+                'f_stat': f_stat,
+                'p_value': p_val,
+                'cohen_d': effect_size
+            })
+
+    results_df = pd.DataFrame(results)
+
+    # Bonferroni calibration
+    n_tests = len(results_df)
+    results_df['p_value_bonferroni'] = results_df['p_value'] * n_tests
+    results_df['is_significant_bonferroni'] = results_df['p_value_bonferroni'] < 0.05
+
+    return results_df
+
+
+def group_categories_by_significance(
+    significance_results1, significance_results2, significance_results3, significance_results4
+):
+    # merge results
+    merged_results = significance_results1[['category', 'is_significant_bonferroni']].rename(
+        columns={'is_significant_bonferroni': 'sig1'}
+    ).merge(
+        significance_results2[['category', 'is_significant_bonferroni']].rename(
+            columns={'is_significant_bonferroni': 'sig2'}
+        ),
+        on='category',
+        how='outer'
+    ).merge(
+        significance_results3[['category', 'is_significant_bonferroni']].rename(
+            columns={'is_significant_bonferroni': 'sig3'}
+        ),
+        on='category',
+        how='outer'
+    ).merge(
+        significance_results4[['category', 'is_significant_bonferroni']].rename(
+            columns={'is_significant_bonferroni': 'sig4'}
+        ),
+        on='category',
+        how='outer'
+    )
+
+    merged_results.fillna(False, inplace=True)
+
+    # Create Boolean matrix
+    merged_results['matrix'] = merged_results[['sig1', 'sig2', 'sig3', 'sig4']].apply(
+        lambda row: tuple(row), axis=1
+    )
+
+    # Group and merge categories by matrix
+    grouped = merged_results.groupby('matrix')['category'].apply(list).reset_index()
+
+    grouped.rename(columns={'category': 'categories'}, inplace=True)
+
+    return grouped
