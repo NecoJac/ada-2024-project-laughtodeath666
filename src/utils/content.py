@@ -22,7 +22,7 @@ def preprocess_data(df_metadata, df_timeseries, min_videos=0):
     return filtered_metadata, filtered_timeseries
 
 
-def calculate_channel_metrics(filtered_metadata, filtered_timeseries):
+def calculate_channel_metrics(filtered_metadata, filtered_timeseries,strategy_bins=[0, 0.4, 0.7, 1]):
     """Calculate channel metrics"""
     # Calculate basic metrics grouped by channel
     channel_metrics = filtered_metadata.groupby('channel_id').agg({
@@ -70,14 +70,14 @@ def calculate_channel_metrics(filtered_metadata, filtered_timeseries):
     # Add channel strategy labels
     merged_metrics['strategy'] = pd.cut(
         merged_metrics['main_category_ratio'],
-        bins=[0, 0.4, 0.7, 1],
+        bins=strategy_bins,
         labels=['Diversified', 'Mixed', 'Specialized']
     )
 
     return merged_metrics
 
 
-def identify_patterns(merged_metrics, percentile=75):
+def identify_patterns(merged_metrics, percentile=75,print_results=True):
     """Identify patterns of successful channels"""
 
     # Define multi-dimensional success thresholds
@@ -117,19 +117,20 @@ def identify_patterns(merged_metrics, percentile=75):
             'avg_diversity': strategy_channels['diversity'].mean()
         }
 
-    print("\n=== Content Strategy Analysis Results ===")
-    print(f"\nNumber of successful channels: {patterns['channel_count']}")
-    print(f"Average diversity index: {patterns['avg_diversity']:.2f}")
-    print(f"Average number of categories: {patterns['avg_categories']:.1f}")
-    print(f"Average main category ratio: {patterns['main_category_ratio'] * 100:.1f}%")
-    print(f"Average views: {patterns['avg_views']:,.0f}")
-    print(f"Average engagement: {patterns['avg_engagement']:.3f}")
-    print(f"Average weekly subscriber growth: {patterns['avg_weekly_sub_growth']:.1f}")
-    print(f"Average weekly view growth: {patterns['avg_weekly_view_growth']:.1f}")
-    print(f"Average active weeks: {patterns['avg_weeks_active']:.1f}")
-    print("\nSuccessful Strategy Characteristics:")
+    if print_results:
+        print("\n=== Content Strategy Analysis Results ===")
+        print(f"\nNumber of successful channels: {patterns['channel_count']}")
+        print(f"Average diversity index: {patterns['avg_diversity']:.2f}")
+        print(f"Average number of categories: {patterns['avg_categories']:.1f}")
+        print(f"Average main category ratio: {patterns['main_category_ratio'] * 100:.1f}%")
+        print(f"Average views: {patterns['avg_views']:,.0f}")
+        print(f"Average engagement: {patterns['avg_engagement']:.3f}")
+        print(f"Average weekly subscriber growth: {patterns['avg_weekly_sub_growth']:.1f}")
+        print(f"Average weekly view growth: {patterns['avg_weekly_view_growth']:.1f}")
+        print(f"Average active weeks: {patterns['avg_weeks_active']:.1f}")
+        print("\nSuccessful Strategy Characteristics:")
     for strategy, stats in patterns.items():
-        if isinstance(stats, dict):  # Ensure it's strategy data rather than other statistics
+        if isinstance(stats, dict) and print_results:  # Ensure it's strategy data rather than other statistics
             print(f"\nStrategy: {strategy}")
             print(f"Proportion: {stats['proportion']:.1%}")
             print(f"Weekly average subscriber growth: {stats['avg_weekly_sub_growth']:.1f}")
@@ -194,6 +195,32 @@ def diversity_plot_insights(merged_metrics):
     plt.tight_layout()
     plt.show()
     return fig
+
+def verify_stability(merged_metrics):
+    """Verify the stability of the threshold for strategy classification and success"""
+
+    merged_metrics=merged_metrics.copy()
+    success_percentiles=[75, 85, 95]
+    strategy_bins=[[0, 0.4, 0.7, 1],[0, 0.25, 0.5, 1],[0, 0.33, 0.66, 1]]
+
+    print("=== Threshold Stability Verification ===")
+    for strategy_bin in strategy_bins:
+        merged_metrics['strategy'] = pd.cut(
+            merged_metrics['main_category_ratio'],
+            bins=strategy_bin,
+            labels=['Diversified', 'Mixed', 'Specialized']
+            )
+        for percentile in success_percentiles:
+            success_patterns, successful_channels = identify_patterns(merged_metrics, percentile=percentile, print_results=False)
+            
+            print(f"\nStrategy Bins: {strategy_bin}, Percentile: {percentile}%")
+            print(f"\n\tNumber of successful channels: {success_patterns['channel_count']}")
+            for strategy, stats in success_patterns.items():
+                if isinstance(stats, dict):
+                    print(f"\n\tStrategy: {strategy}  Proportion: {stats['proportion']:.1%}")
+                    print(f"\tWeekly average subscriber growth: {stats['avg_weekly_sub_growth']:.1f}")
+                    print(f"\tWeekly average view growth: {stats['avg_weekly_view_growth']:,.0f}")
+            plot=diversity_plot_insights(merged_metrics)
 
 
 def ANOVA(merged_metrics):

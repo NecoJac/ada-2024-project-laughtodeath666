@@ -5,7 +5,7 @@ import pandas as pd
 import seaborn as sns
 from scipy.stats import f_oneway
 
-def calculate_popularity_score_vectorized(df):
+def calculate_popularity_score_vectorized(df,weights=[0.5,0.3,0.2]):
     """
     Vectorized calculation of popularity score
     """
@@ -21,9 +21,9 @@ def calculate_popularity_score_vectorized(df):
 
 
     score = (
-            0.5 * (view_score / max_view) +
-            0.3 * (like_score / max_like) +
-            0.2 * (comment_score / max_comment)
+            weights[0] * (view_score / max_view) +
+            weights[1] * (like_score / max_like) +
+            weights[2] * (comment_score / max_comment)
     )
 
     return score
@@ -138,8 +138,8 @@ def analyze_duration_metrics(df_metadata, df_comments):
     df_analysis['popularity_score'] = calculate_popularity_score_vectorized(df_analysis)
 
     # Create duration categories
-    duration_bins = [0, 1, 3, 5, 10, 15, 30, 60, np.inf]
-    duration_labels = ['0-1', '1-3', '3-5', '5-10', '10-15', '15-30', '30-60', '60+']
+    duration_bins = [0, 1, 3, 5, 10, 15, 30, np.inf]
+    duration_labels = ['0-1', '1-3', '3-5', '5-10', '10-15', '15-30', '30+']
     df_analysis['duration_category'] = pd.cut(
         df_analysis['duration_minutes'],
         bins=duration_bins,
@@ -179,7 +179,7 @@ def plot_engagement_metrics(df_analysis):
         # Set x-axis ticks and labels correctly
         axes[row, col].set_xticks(range(len(plot_data['duration_category'].unique())))
         axes[row, col].set_xticklabels(
-            plot_data['duration_category'].unique(),
+            plot_data['duration_category'].unique().sort_values(),
             rotation=45
         )
 
@@ -231,6 +231,37 @@ def analyze_temporal_trends(df_analysis):
 
     return plt
 
+def verify_popularity_weights(df_analysis):
+    """Verify the stability of the weight for caculating popularity score"""
+    df_analysis=df_analysis.copy()
+    weights=[[0.5,0.3,0.2],[0.3,0.5,0.2],[0.2,0.3,0.5],[0.33,0.33,0.34]]
+
+    print(f"===Stability Verification for Popularity Weights===")
+    for weight in weights:
+        print(f"\n\tPopularity Weights: View={weight[0]}, Like={weight[1]}, Comment={weight[2]}")
+        df_analysis['popularity_score'] = calculate_popularity_score_vectorized(df_analysis,weight)
+        # Calculate the correlation between the popularity score and the view count
+        metric='popularity_score'
+        title='Popularity Score by Duration'
+        fig, ax = plt.subplots(figsize=(6, 4))
+        sns.boxplot(
+            x='duration_category',
+            y=metric,
+            data=df_analysis,
+        )
+
+        # Set x-axis ticks and labels correctly
+        ax.set_xticks(range(len(df_analysis['duration_category'].unique())))
+        ax.set_xticklabels(
+            df_analysis['duration_category'].unique().sort_values(),
+            rotation=45
+        )
+
+        ax.set_title(title)
+        ax.set_xlabel('Duration (minutes)')
+        plt.show()
+        plot=analyze_temporal_trends(df_analysis.copy())
+
 
 def analyze_duration_metrics_by_category(df_metadata, df_comments):
     """
@@ -257,8 +288,8 @@ def analyze_duration_metrics_by_category(df_metadata, df_comments):
     df_analysis['popularity_score'] = calculate_popularity_score_vectorized(df_analysis)
 
     # Create duration categories
-    duration_bins = [0, 1, 3, 5, 10, 15, 30, 60, np.inf]
-    duration_labels = ['0-1', '1-3', '3-5', '5-10', '10-15', '15-30', '30-60', '60+']
+    duration_bins = [0, 1, 3, 5, 10, 15, 30, np.inf]
+    duration_labels = ['0-1', '1-3', '3-5', '5-10', '10-15', '15-30', '30+']
     df_analysis['duration_category'] = pd.cut(
         df_analysis['duration_minutes'],
         bins=duration_bins,
@@ -332,6 +363,28 @@ def analyze_temporal_trends_by_category(df_analysis):
     plt.tight_layout()
     return fig
 
+def plot_duration_distribution_pie(df_analysis):
+    """
+    Plot a pie chart showing the distribution of videos across duration categories.
+    """
+    # Calculate the counts for each duration category
+    duration_counts = df_analysis['duration_category'].value_counts()
+
+    # Create the pie chart
+    plt.figure(figsize=(8,6))
+    plt.pie(
+        duration_counts,
+        labels=duration_counts.index,
+        autopct='%1.1f%%',
+        startangle=140,
+        colors=sns.color_palette('pastel', len(duration_counts))
+    )
+
+    # Add a title
+    plt.title('Distribution of Videos by Duration Category')
+    plt.legend(title='Duration (minutes)',loc='lower right', bbox_to_anchor=(1.2, 0.5))
+    plt.axis('equal')  # Equal aspect ratio ensures the pie chart is circular.
+    plt.show()
 
 def cohens_d(group1, group2):
     # Calculate the mean and standard deviation
