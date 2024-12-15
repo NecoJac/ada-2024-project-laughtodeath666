@@ -1,16 +1,13 @@
 ## YouTube's Inner World: A Data Exploration of Channel and Video Dynamics
 
-This is a template repo for your project to help you organise and document your code better. 
-Please use this structure for your project and document the installation, usage and structure as below.
-
 ## Abstract
 
-In this project, we aim to explore strategies to enhance the popularity of a YouTube channel using the Youniverse dataset. Our analysis focuses on two key aspects: the impact of video category diversity and the optimal video duration. Specifically, we investigate how these factors correlate with key engagement metrics, including the number of views, likes, dislikes, comments, the growth number of subscribers and views. To better capture video popularity, we also examine and propose methods for quantifying the degree of popularity. This comprehensive approach seeks to provide actionable insights for content creators to optimize their video strategies and achieve greater audience engagement.
+This project explores strategies to enhance the popularity of YouTube channels using the YouNiverse dataset. Our analysis focuses on two key factors: video category diversity and optimal video duration, examining their correlation with engagement metrics such as views, likes, dislikes, comments, and subscriber growth. To provide a deeper understanding of video performance, we propose methods to quantify popularity more effectively. This comprehensive approach aims to offer actionable insights for content creators to optimize their strategies and maximize audience engagement. Additionally, during our analysis, unusual trends emerged, prompting an investigation into their potential connection to the rise of short videos. By addressing these anomalies, we aim to uncover the broader implications of evolving content preferences and provide creators with a data-driven foundation for navigating the dynamic YouTube ecosystem.
 
 ## Research Questions
 1. How does video category diversity impact a YouTube channel? Will a more diverse video category be better, or will a more focused category be more popular?
 2. What is the optimal video duration for a YouTube video? How does video duration correlate with key engagement metrics? Does the optimal duration vary across different video categories?
-3. How can we quantify the degree of popularity of a YouTube video? What are the key factors that contribute to video popularity? How can we measure if the degree of the popularity is precise?
+3. How do external factors affect video popularity trends? Will the rise of short video platforms have an impact on the duration of videos on Youtube?
 
 ## Methodology
 1. Sample Data: Considering the limitations of computing resources. We select a subset of YouTube channels from df_channels_en.tsv. The sample dataset includes channel_id with varying video category diversity and have the same proportion of video categories as the original dataset. Then, we use these channel_ids to filter data from df_timeseries_en.tsv, num_comments.tsv and yt_metadata_helper.feather.
@@ -81,7 +78,7 @@ git clone <git@github.com:epfl-ada/ada-2024-project-laughtodeath666.git>
 cd <project repo>
 
 # [OPTIONAL] create conda environment
-conda create -n <env_name> python=3.9 
+conda create -n <env_name> python=3.10 
 conda activate <env_name>
 
 
@@ -90,7 +87,7 @@ pip install -r pip_requirements.txt
 ```
 
 Download the dataset from this following link and add the data files to the directory 'data'.
-> https://zenodo.org/records/4650046
+> [Sampled Data](https://drive.google.com/drive/folders/1MgLEmq6yTFvKvjFenrXe93HaLlVR8xqw?usp=sharing)
 
 ## Project Structure
 
@@ -108,6 +105,7 @@ The directory structure of this project looks like this:
 │   ├── utils/                  <- Analysis utilities
 │   │   ├── content.py          <- Content diversity strategy analysis
 │   │   └── duration.py         <- Video duration analysis
+|   |   └── frequency.py        <- Frequency domain analysis
 │
 ├── results.ipynb               <- a well-structured notebook showing the results
 │

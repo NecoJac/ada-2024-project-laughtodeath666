@@ -33,3 +33,6 @@ data/*
 
 # Keep data folder
 !data/.gitkeep
+
+ttt.ipynb
+.DS_Store
