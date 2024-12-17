@@ -12,7 +12,7 @@ This project explores strategies to enhance the popularity of YouTube channels u
 
 ## Research Questions
 1. How does video category diversity impact a YouTube channel? Will a more diverse video category be better, or will a more focused category be more popular?
-2. What is the optimal video duration for a YouTube video? How does video duration correlate with key engagement metrics? Does the optimal duration vary across different video categories?
+2. What is the optimal video duration for a YouTube video? How does video duration correlate with key engagement metrics? Does the optimal duration vary across *different video categories*?
 3. How do external factors affect video popularity trends? Will the rise of short video platforms have an impact on the duration of videos on Youtube?
 
 ## Methodology
