@@ -94,8 +94,12 @@ def plot_max_duration(optimal_durations_df):
     # List of metrics to plot
     metrics = ['max_view_count_duration', 'max_like_count_duration', 'max_num_comms_duration',
                'max_popularity_score_duration']
-    titles = ['Max View_number Duration by Year', 'Max Like_number Duration by Year',
-              'Max Comments_number Duration by Year', 'Max Popularity_score Duration by Year']
+    titles = [
+        'Average Duration of Top 10 Videos by View Count Across Categories and Years',
+        'Average Duration of Top 10 Videos by Like Count Across Categories and Years',
+        'Average Duration of Top 10 Videos by Comment Count Across Categories and Years',
+        'Average Duration of Top 10 Videos by Popularity Score Across Categories and Years'
+    ]
 
     # Iterate through each metric and create a separate plot
     for i, (metric, title) in enumerate(zip(metrics, titles)):

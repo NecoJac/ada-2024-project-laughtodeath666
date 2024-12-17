@@ -139,10 +139,45 @@ def identify_patterns(merged_metrics, percentile=75,print_results=True):
 
     return patterns, successful_channels
 
+def identify_patterns_by_years(df_metadata, df_timeseries):
+    """Identify patterns of successful channels"""
 
-def diversity_plot_insights(merged_metrics):
-    """Create key insight visualizations"""
+    for y in range(2006, 2020):
+        # year metadata
+        year_data = df_metadata[df_metadata['upload_date'].between(f'{y}-01-01', f'{y}-12-31')]
+
+        merged_metrics = calculate_channel_metrics(year_data, df_timeseries)
+        patterns, successful_channels = identify_patterns(merged_metrics, percentile=75, print_results=False)
+
+        specialized_prop = patterns['Specialized']['proportion']
+        mixed_prop = patterns['Mixed']['proportion']
+        diversified_prop = patterns['Diversified']['proportion']
+
+        print(f"Year: {y}")
+        print(f"  Total Channels Processed: {len(merged_metrics)}")
+        print(f"  Successful Channels (Top 25%): {len(successful_channels)}")
+        print(f"  Proportion of Strategies:")
+        print(f"    - Specialized: {specialized_prop:.2%}")
+        print(f"    - Mixed:       {mixed_prop:.2%}")
+        print(f"    - Diversified: {diversified_prop:.2%}")
+        print("-" * 50)
+
+def diversity_plot_insights(merged_metrics, top_percent=0.75):
+    """
+    Create key insight visualizations with horizontal lines for the top x% thresholds.
+
+    Parameters:
+        merged_metrics: DataFrame containing 'diversity', 'view_count', 'engagement_rate',
+                        'weekly_sub_growth', 'weekly_view_growth', and 'strategy'.
+        top_percent: Float between 0 and 1 indicating the top percentile to highlight (default is 70%).
+    """
+    import numpy as np
+
     fig, axes = plt.subplots(2, 2, figsize=(15, 10))
+
+    # Define thresholds for y-values
+    y_axes = ['view_count', 'engagement_rate', 'weekly_sub_growth', 'weekly_view_growth']
+    thresholds = {col: np.percentile(merged_metrics[col], top_percent * 100) for col in y_axes}
 
     # 1. Diversity vs Views
     sns.scatterplot(
@@ -151,46 +186,58 @@ def diversity_plot_insights(merged_metrics):
         y='view_count',
         hue='strategy',
         alpha=0.5,
-        ax=axes[0,0]
+        ax=axes[0, 0]
     )
-    axes[0,0].set_title('Content Diversity vs Average Views')
-    axes[0,0].set_yscale('log')  # Use log scale
+    axes[0, 0].axhline(thresholds['view_count'], color='r', linestyle='--',
+                       label=f'Top {int((1 - top_percent) * 100)}%')
+    axes[0, 0].set_title('Content Diversity vs Average Views')
+    axes[0, 0].set_yscale('log')
+    axes[0, 0].legend()
 
-    # 2. Number of categories vs Engagement
+    # 2. Diversity vs Engagement
     sns.scatterplot(
         data=merged_metrics,
         x='diversity',
         y='engagement_rate',
         hue='strategy',
         alpha=0.5,
-        ax=axes[0,1]
+        ax=axes[0, 1]
     )
+    axes[0, 1].axhline(thresholds['engagement_rate'], color='r', linestyle='--',
+                       label=f'Top {int((1 - top_percent) * 100)}%')
+    axes[0, 1].set_title('Content Diversity vs Average Engagement_rate')
     axes[0, 1].set_yscale('log')
-    axes[0,1].set_title('Content Diversity vs Average Engagement_rate')
+    axes[0, 1].legend()
 
-    # 3. Growth rate vs Diversity
+    # 3. Diversity vs Weekly Sub Growth
     sns.scatterplot(
         data=merged_metrics,
         x='diversity',
         y='weekly_sub_growth',
         hue='strategy',
         alpha=0.5,
-        ax=axes[1,0]
+        ax=axes[1, 0]
     )
+    axes[1, 0].axhline(thresholds['weekly_sub_growth'], color='r', linestyle='--',
+                       label=f'Top {int((1 - top_percent) * 100)}%')
+    axes[1, 0].set_title('Content Diversity vs Weekly_sub_growth')
     axes[1, 0].set_yscale('log')
-    axes[1,0].set_title('Content Diversity vs Weekly_sub_growth')
+    axes[1, 0].legend()
 
-    # 4. Main category ratio vs Growth rate
+    # 4. Diversity vs Weekly View Growth
     sns.scatterplot(
         data=merged_metrics,
         x='diversity',
         y='weekly_view_growth',
         hue='strategy',
         alpha=0.5,
-        ax=axes[1,1]
+        ax=axes[1, 1]
     )
+    axes[1, 1].axhline(thresholds['weekly_view_growth'], color='r', linestyle='--',
+                       label=f'Top {int((1 - top_percent) * 100)}%')
+    axes[1, 1].set_title('Content Diversity vs Weekly_view_growth')
     axes[1, 1].set_yscale('log')
-    axes[1,1].set_title('Content Diversity vs Weekly_view_growth')
+    axes[1, 1].legend()
 
     plt.tight_layout()
     plt.show()
@@ -220,7 +267,7 @@ def verify_stability(merged_metrics):
                     print(f"\n\tStrategy: {strategy}  Proportion: {stats['proportion']:.1%}")
                     print(f"\tWeekly average subscriber growth: {stats['avg_weekly_sub_growth']:.1f}")
                     print(f"\tWeekly average view growth: {stats['avg_weekly_view_growth']:,.0f}")
-            plot=diversity_plot_insights(merged_metrics)
+            plot=diversity_plot_insights(merged_metrics, percentile/100)
 
 
 def ANOVA(merged_metrics):
