@@ -1,4 +1,10 @@
-## YouTube's Inner World: A Data Exploration of Channel and Video Dynamics
+# YouTube's Inner World: A Data Exploration of Channel and Video Dynamics
+
+## Data Story & Results Notebook
+
+Check out our data story [here](https://necojac.github.io/ada-story/)
+
+Check out our results notebook [here](https://github.com/epfl-ada/ada-2024-project-laughtodeath666/blob/main/results.ipynb)
 
 ## Abstract
 
@@ -6,7 +12,7 @@ This project explores strategies to enhance the popularity of YouTube channels u
 
 ## Research Questions
 1. How does video category diversity impact a YouTube channel? Will a more diverse video category be better, or will a more focused category be more popular?
-2. What is the optimal video duration for a YouTube video? How does video duration correlate with key engagement metrics? Does the optimal duration vary across different video categories?
+2. What is the optimal video duration for a YouTube video? How does video duration correlate with key engagement metrics? Does the optimal duration vary across *different video categories*?
 3. How do external factors affect video popularity trends? Will the rise of short video platforms have an impact on the duration of videos on Youtube?
 
 ## Methodology
@@ -38,7 +44,7 @@ This project explores strategies to enhance the popularity of YouTube channels u
 
    d) Box plot: Several box plots are generated to visualize how different the video performances vary by video duration categories.
 
-## Proposed Timeline
+## Timeline
 
 1. 16.11.2024-30.11.2024
 
@@ -63,11 +69,11 @@ This project explores strategies to enhance the popularity of YouTube channels u
    Select relevant data and visualization tools, complete and improve the final story presentation.
 
 ## Organization within the team
-- Shengze: Diversity Outlier Investigation.
-- Shuhua: Study the impact of events on preference duration
-- Xuanrui: Frequency domain analysis, time series fitting and forecasting
-- Xinran: Relate the content strategies with the analysis of duration preferences
-- Xinyue: Build a framework to tell the data story
+- Shengze: diversity outlier investigation, data story blog organization
+- Shuhua: study the impact of events on preference duration, GitHub repository organization
+- Xuanrui: frequency domain analysis, time series fitting and forecasting, data story blog organization
+- Xinran: relate the content strategies with the analysis of duration preferences, story outline organization
+- Xinyue: build a framework to tell the data story, story outline organization
 
 
 ## Quickstart
@@ -86,8 +92,11 @@ conda activate <env_name>
 pip install -r pip_requirements.txt
 ```
 
-Download the dataset from this following link and add the data files to the directory 'data'.
+Download the Sampled dataset from this following link and add the data files to the directory 'data'.
 > [Sampled Data](https://drive.google.com/drive/folders/1MgLEmq6yTFvKvjFenrXe93HaLlVR8xqw?usp=sharing)
+
+If you want to get the original unsampled dataset, you can download it from the following link.
+> [Original Data](https://github.com/epfl-dlab/YouNiverse/tree/master)
 
 ## Project Structure
 
@@ -96,6 +105,8 @@ The directory structure of this project looks like this:
 ```
 ├── data                        <- Project data files
 │
+├── image/                      <- Image files 
+│   
 ├── src/                        <- Source code
 │   ├── data/                   <- Data loading and preprocessing
 │   │   ├── sample_data.ipynb   <- Sample data generation

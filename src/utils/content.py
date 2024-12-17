@@ -4,7 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy.stats as stats
-from numba.cuda.libdeviceimpl import retty
 
 
 def preprocess_data(df_metadata, df_timeseries, min_videos=0):
@@ -428,3 +427,4 @@ def metrics_plot_insights(significant_means):
 
     plt.tight_layout(rect=[0, 0, 1, 0.95])
     plt.show()
+    fig.savefig('bar.pdf')

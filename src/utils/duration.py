@@ -82,38 +82,44 @@ def optimal_video_length(df_metadata, df_comments):
     return optimal_durations_df
 
 
+import plotly.express as px
+import plotly.graph_objects as go
+
+
 def plot_max_duration(optimal_durations_df):
     """
-    Plot max view_duration, max like_duration, max comment_duration, and max popularity_duration by year for each category.
+    Plot interactive max view_duration, max like_duration, max comment_duration,
+    and max popularity_duration by year for each category using Plotly.
     """
-    sns.set(style="whitegrid")
-
-    # Set up the plotting layout
-    plt.figure(figsize=(15, 12))
-
     # List of metrics to plot
-    metrics = ['max_view_count_duration', 'max_like_count_duration', 'max_num_comms_duration',
-               'max_popularity_score_duration']
+    metrics = ['max_view_count_duration', 'max_like_count_duration',
+               'max_num_comms_duration', 'max_popularity_score_duration']
     titles = ['Max View_number Duration by Year', 'Max Like_number Duration by Year',
               'Max Comments_number Duration by Year', 'Max Popularity_score Duration by Year']
 
-    # Iterate through each metric and create a separate plot
-    for i, (metric, title) in enumerate(zip(metrics, titles)):
-        plt.subplot(2, 2, i + 1)
+    # Loop through each metric to create an interactive plot
+    for metric, title in zip(metrics, titles):
+        fig = px.line(
+            optimal_durations_df,
+            x='year',
+            y=metric,
+            color='categories',
+            markers=True,
+            title=title,
+            labels={'year': 'Year', metric: f"{metric.replace('_', ' ').title()} (minutes)"},
+            template="plotly_white"
+        )
 
-        # Create line plot for the current metric
-        sns.lineplot(x='year', y=metric, hue='categories', data=optimal_durations_df, marker='o')
+        # Update layout for better visualization
+        fig.update_layout(
+            xaxis=dict(tickangle=45),
+            yaxis=dict(title=f"{metric.replace('_', ' ').title()}"),
+            legend_title="Categories",
+            hovermode="x unified"
+        )
 
-        # Title and labels
-        plt.title(title)
-        plt.xlabel('Year')
-        plt.ylabel(f'{metric.replace("_", " ").title()} (minutes)')
-        plt.xticks(rotation=45)
-        plt.grid(True, alpha=0.3)
-
-    # Adjust layout and show the plots
-    plt.tight_layout()
-    plt.show()
+        # Show the interactive figure
+        fig.show()
 
 
 def analyze_duration_metrics(df_metadata, df_comments):
@@ -295,10 +301,10 @@ def analyze_duration_metrics_by_category(df_metadata, df_comments):
         bins=duration_bins,
         labels=duration_labels
     )
-
+    df_analysis['year_month'] = df_analysis['upload_date'].dt.to_period('M')
     return df_analysis
 
-
+import plotly.graph_objects as go
 def analyze_temporal_trends_by_category(df_analysis):
     """
     Analyze and plot the evolution of video duration preferences by category
@@ -318,9 +324,6 @@ def analyze_temporal_trends_by_category(df_analysis):
     cols = 3
     rows = (num_categories + cols - 1) // cols  # Ensure enough rows for all subplots
 
-    fig, axes = plt.subplots(rows, cols, figsize=(20, rows * 5))
-    axes = axes.flatten()  # Flatten for easier indexing
-
     for i, category in enumerate(categories):
         # Filter data for the category
         category_data = df_analysis[df_analysis['categories'] == category]
@@ -332,36 +335,51 @@ def analyze_temporal_trends_by_category(df_analysis):
         )['popularity_score'].mean().reset_index())
 
         # Reshape data using pivot_table
-        pivot_data = temporal_trends.pivot(
+        df = temporal_trends.pivot(
             index='year_month',
             columns='duration_category',
             values='popularity_score'
         )
+        df_long = df.melt(id_vars='year_month', var_name='duration', value_name='popularity')
 
-        # Plot trend lines for the category
-        ax = axes[i]
-        for col in pivot_data.columns:
-            if not pivot_data[col].empty:
-                ax.plot(range(len(pivot_data)), pivot_data[col], label=col, marker='o', markersize=4)
+        # Create a Plotly interactive line chart
+        fig = go.Figure()
 
-        # Set x-axis labels
-        step = max(len(pivot_data) // 10, 1)
-        ax.set_xticks(range(0, len(pivot_data), step))
-        ax.set_xticklabels([str(idx) for idx in pivot_data.index[::step]], rotation=45)
+        # Add traces for each duration category
+        for duration in df_long['duration'].unique():
+            data = df_long[df_long['duration'] == duration]
+            fig.add_trace(go.Scatter(
+                x=data['year_month'],
+                y=data['popularity'],
+                mode='lines+markers',
+                name=duration,
+                hovertemplate=
+                '<b>Duration</b>: ' + duration + '<br>' +
+                '<b>Time</b>: %{x}<br>' +
+                '<b>Popularity</b>: %{y}<extra></extra>'
+            ))
 
-        # Set titles and labels
-        ax.set_title(f'Evolution of Video Duration Preferences: {category}')
-        ax.set_xlabel('Time')
-        ax.set_ylabel('Average Popularity Score')
-        ax.legend(title='Duration (minutes)', bbox_to_anchor=(1.05, 1))
-        ax.grid(True, alpha=0.3)
+        # Update Layout for interactivity
+        fig.update_layout(
+            title='Evolution of Video Duration Preferences:'+category,
+            width=1200,  # 设置图的宽度，例如 1200px
+            height=600,  # 设置图的高度，例如 600px
+            xaxis=dict(
+                title='Time',
+                tickangle=45,  # Rotate x-axis labels 45 degrees
+                tickmode='auto',
+                nticks=20  # Reduce x-axis tick density
+            ),
+            yaxis=dict(
+                title='Average Popularity Score'
+            ),
+            legend_title='Duration (minutes)',  # Add legend title
+            hovermode='closest',  # Make hover interactive and detailed
+        )
 
-    # Hide unused axes
-    for j in range(i + 1, len(axes)):
-        fig.delaxes(axes[j])
-
-    plt.tight_layout()
-    return fig
+        # Show the figure
+        fig.show()
+        fig.write_html(category+".html")
 
 def plot_duration_distribution_pie(df_analysis):
     """
