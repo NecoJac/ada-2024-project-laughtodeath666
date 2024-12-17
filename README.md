@@ -69,11 +69,11 @@ This project explores strategies to enhance the popularity of YouTube channels u
    Select relevant data and visualization tools, complete and improve the final story presentation.
 
 ## Organization within the team
-- Shengze: Diversity Outlier Investigation, organize the data story blog
-- Shuhua: Study the impact of events on preference duration, organize the GitHub repository
-- Xuanrui: Frequency domain analysis, time series fitting and forecasting, organize the data story blog
-- Xinran: Relate the content strategies with the analysis of duration preferences, organize the data story
-- Xinyue: Build a framework to tell the data story, organize the data story
+- Shengze: diversity outlier investigation, data story blog organization
+- Shuhua: study the impact of events on preference duration, GitHub repository organization
+- Xuanrui: frequency domain analysis, time series fitting and forecasting, data story blog organization
+- Xinran: relate the content strategies with the analysis of duration preferences, story outline organization
+- Xinyue: build a framework to tell the data story, story outline organization
 
 
 ## Quickstart
